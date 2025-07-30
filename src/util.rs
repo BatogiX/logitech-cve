@@ -1,4 +1,4 @@
-use std::ptr;
+use std::{mem, ptr};
 
 use windows_sys::{
     Wdk::Foundation::OBJECT_ATTRIBUTES,
@@ -17,7 +17,7 @@ pub const fn InitializeObjectAttributes(
     s: *const SECURITY_DESCRIPTOR,
 ) {
     #[allow(clippy::cast_possible_truncation)] // OBJECT_ATTRIBUTES is only 48 bytes so it should fit in u32
-    const LENGTH: u32 = size_of::<OBJECT_ATTRIBUTES>() as u32;
+    const LENGTH: u32 = mem::size_of::<OBJECT_ATTRIBUTES>() as u32;
 
     p.Length = LENGTH;
     p.RootDirectory = r;
