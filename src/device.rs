@@ -1,15 +1,17 @@
 use std::{ffi, mem, ptr};
 
 use windows_sys::{
-    core::PCWSTR, Wdk::{
+    Wdk::{
         Foundation::OBJECT_ATTRIBUTES,
-        Storage::FileSystem::{NtCreateFile, FILE_NON_DIRECTORY_FILE, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT},
-        System::{SystemServices::ZwClose, IO::NtDeviceIoControlFile},
-    }, Win32::{
+        Storage::FileSystem::{FILE_NON_DIRECTORY_FILE, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT, NtCreateFile},
+        System::{IO::NtDeviceIoControlFile, SystemServices::ZwClose},
+    },
+    Win32::{
         Foundation::{GENERIC_WRITE, HANDLE, NTSTATUS, STATUS_SUCCESS, UNICODE_STRING},
         Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_SHARE_NONE, SYNCHRONIZE},
-        System::{WindowsProgramming::RtlInitUnicodeString, IO::IO_STATUS_BLOCK},
-    }
+        System::{IO::IO_STATUS_BLOCK, WindowsProgramming::RtlInitUnicodeString},
+    },
+    core::PCWSTR,
 };
 
 use crate::{KeyboardButton, MouseButton, util::InitializeObjectAttributes};
