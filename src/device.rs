@@ -1,19 +1,14 @@
 use std::{ffi, mem, ptr};
 
-use windows::{
+use windows_sys::{
     Wdk::{
         Foundation::OBJECT_ATTRIBUTES,
-        Storage::FileSystem::{
-            FILE_NON_DIRECTORY_FILE, FILE_SYNCHRONOUS_IO_NONALERT, NTCREATEFILE_CREATE_DISPOSITION,
-            NTCREATEFILE_CREATE_OPTIONS, NtCreateFile,
-        },
+        Storage::FileSystem::{FILE_NON_DIRECTORY_FILE, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT, NtCreateFile},
         System::{IO::NtDeviceIoControlFile, SystemServices::ZwClose},
     },
     Win32::{
-        Foundation::{GENERIC_WRITE, HANDLE, NTSTATUS, OBJECT_ATTRIBUTE_FLAGS, STATUS_SUCCESS, UNICODE_STRING},
-        Storage::FileSystem::{
-            FILE_ACCESS_RIGHTS, FILE_ATTRIBUTE_NORMAL, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_MODE, SYNCHRONIZE,
-        },
+        Foundation::{GENERIC_WRITE, HANDLE, NTSTATUS, STATUS_SUCCESS, UNICODE_STRING},
+        Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, SYNCHRONIZE},
         System::{IO::IO_STATUS_BLOCK, WindowsProgramming::RtlInitUnicodeString},
     },
     core::PCWSTR,
@@ -148,16 +143,16 @@ impl Device {
     /// `true` if a device was successfully opened, `false` otherwise.
     fn open(&mut self) -> bool {
         let buffers: [Vec<u16>; 2] = [
-            "\\??\\ROOT#SYSTEM#0001#{1abc05c0-c378-41b9-9cef-df1aba82b015}"
+            "\\??\\ROOT#SYSTEM#0001#{1abc05c0-c378-41b9-9cef-df1aba82b015}\0"
                 .encode_utf16()
                 .collect(),
-            "\\??\\ROOT#SYSTEM#0002#{1abc05c0-c378-41b9-9cef-df1aba82b015}"
+            "\\??\\ROOT#SYSTEM#0002#{1abc05c0-c378-41b9-9cef-df1aba82b015}\0"
                 .encode_utf16()
                 .collect(),
         ];
 
         for buffer in buffers {
-            if self.device_initialize(PCWSTR(buffer.as_ptr())) == STATUS_SUCCESS {
+            if self.device_initialize(buffer.as_ptr()) == STATUS_SUCCESS {
                 return true;
             }
         }
@@ -178,19 +173,19 @@ impl Device {
 
         unsafe {
             RtlInitUnicodeString(&raw mut name, device_name);
-            InitializeObjectAttributes(&mut attr, &raw const name, OBJECT_ATTRIBUTE_FLAGS(0), None, None);
+            InitializeObjectAttributes(&mut attr, &raw const name, 0, ptr::null_mut(), ptr::null());
 
             NtCreateFile(
                 &raw mut self.filehandle,
-                FILE_ACCESS_RIGHTS(GENERIC_WRITE.0 | SYNCHRONIZE.0),
+                GENERIC_WRITE | SYNCHRONIZE,
                 &raw const attr,
                 &raw mut self.iostatusblock,
-                None, // AllocationSize (optional)
-                FILE_FLAGS_AND_ATTRIBUTES(FILE_ATTRIBUTE_NORMAL.0),
-                FILE_SHARE_MODE(0),
-                NTCREATEFILE_CREATE_DISPOSITION(3), // CreateDisposition (OPEN_EXISTING)
-                NTCREATEFILE_CREATE_OPTIONS(FILE_NON_DIRECTORY_FILE.0 | FILE_SYNCHRONOUS_IO_NONALERT.0),
-                None,
+                ptr::null::<i64>(), // AllocationSize (optional)
+                FILE_ATTRIBUTE_NORMAL,
+                0,
+                FILE_OPEN_IF, // CreateDisposition (OPEN_EXISTING)
+                FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
+                ptr::null(),
                 0,
             )
         }
@@ -212,14 +207,14 @@ impl Device {
         let status = unsafe {
             NtDeviceIoControlFile(
                 self.filehandle,
+                ptr::null_mut(),
                 None,
-                None,
-                None,
+                ptr::null(),
                 &raw mut block,
                 0x002A_2010,
-                Some(ptr::from_mut(buffer).cast::<ffi::c_void>()),
+                ptr::from_mut(buffer).cast::<ffi::c_void>(),
                 INPUTBUFFERLENGTH,
-                None,
+                ptr::null_mut(),
                 0,
             )
         };
@@ -242,14 +237,14 @@ impl Device {
         let status = unsafe {
             NtDeviceIoControlFile(
                 self.filehandle,
+                ptr::null_mut(),
                 None,
-                None,
-                None,
+                ptr::null(),
                 &raw mut block,
                 0x002A_200C,
-                Some(ptr::from_mut(buffer).cast::<ffi::c_void>()),
+                ptr::from_mut(buffer).cast::<ffi::c_void>(),
                 INPUTBUFFERLENGTH,
-                None,
+                ptr::null_mut(),
                 0,
             )
         };
@@ -259,9 +254,9 @@ impl Device {
     /// Closes the handle to the device.
     fn close(&mut self) {
         unsafe {
-            if !self.filehandle.0.is_null() {
+            if !self.filehandle.is_null() {
                 let _ = ZwClose(self.filehandle);
-                self.filehandle = HANDLE(ptr::null_mut());
+                self.filehandle = ptr::null_mut();
             }
         }
     }
@@ -279,7 +274,7 @@ mod tests {
         };
         assert!(device.open(), "Device not opened");
         device.close();
-        assert!(device.filehandle.is_invalid());
+        assert!(device.filehandle.is_null());
     }
 
     #[test]
