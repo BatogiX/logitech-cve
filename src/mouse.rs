@@ -1,5 +1,3 @@
-#![allow(non_snake_case)]
-
 use std::{thread, time::Duration};
 
 use crate::device::Device;
