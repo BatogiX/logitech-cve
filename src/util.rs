@@ -16,11 +16,10 @@ pub const fn InitializeObjectAttributes(
     r: HANDLE,
     s: *const SECURITY_DESCRIPTOR,
 ) {
-    // OBJECT_ATTRIBUTES is only 48 bytes so it should fit in u32
-    #[allow(clippy::cast_possible_truncation)]
-    let Length = size_of::<OBJECT_ATTRIBUTES>() as u32;
+    #[allow(clippy::cast_possible_truncation)] // OBJECT_ATTRIBUTES is only 48 bytes so it should fit in u32
+    const LENGTH: u32 = size_of::<OBJECT_ATTRIBUTES>() as u32;
 
-    p.Length = Length;
+    p.Length = LENGTH;
     p.RootDirectory = r;
     p.ObjectName = n;
     p.Attributes = a;
