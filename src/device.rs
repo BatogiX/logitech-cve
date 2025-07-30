@@ -1,17 +1,15 @@
 use std::{ffi, mem, ptr};
 
 use windows_sys::{
-    Wdk::{
+    core::PCWSTR, Wdk::{
         Foundation::OBJECT_ATTRIBUTES,
-        Storage::FileSystem::{FILE_NON_DIRECTORY_FILE, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT, NtCreateFile},
-        System::{IO::NtDeviceIoControlFile, SystemServices::ZwClose},
-    },
-    Win32::{
+        Storage::FileSystem::{NtCreateFile, FILE_NON_DIRECTORY_FILE, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT},
+        System::{SystemServices::ZwClose, IO::NtDeviceIoControlFile},
+    }, Win32::{
         Foundation::{GENERIC_WRITE, HANDLE, NTSTATUS, STATUS_SUCCESS, UNICODE_STRING},
-        Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, SYNCHRONIZE},
-        System::{IO::IO_STATUS_BLOCK, WindowsProgramming::RtlInitUnicodeString},
-    },
-    core::PCWSTR,
+        Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_SHARE_NONE, SYNCHRONIZE},
+        System::{WindowsProgramming::RtlInitUnicodeString, IO::IO_STATUS_BLOCK},
+    }
 };
 
 use crate::{KeyboardButton, MouseButton, util::InitializeObjectAttributes};
@@ -182,7 +180,7 @@ impl Device {
                 &raw mut self.iostatusblock,
                 ptr::null::<i64>(), // AllocationSize (optional)
                 FILE_ATTRIBUTE_NORMAL,
-                0,
+                FILE_SHARE_NONE,
                 FILE_OPEN_IF, // CreateDisposition (OPEN_EXISTING)
                 FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
                 ptr::null(),
