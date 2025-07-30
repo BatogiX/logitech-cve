@@ -1,0 +1,22 @@
+[package]
+name = "logitech-cve"
+version = "1.0.0"
+edition = "2024"
+description = "A Rust library for interacting with Logitech virtual driver."
+license = "MIT"
+repository = "https://github.com/BatogiX/logitech-cve"
+keywords = ["logitech", "rust", "windows", "library"]
+categories = ["os::windows-apis", "api-bindings"]
+
+[dependencies]
+windows = { version = "0.61.3", features = [
+    'Wdk_Foundation',
+    'Wdk_Storage_FileSystem',
+    'Wdk_System_IO',
+    "Wdk_System_SystemServices",
+    'Win32_Foundation',
+    'Win32_Security',
+    'Win32_Storage_FileSystem',
+    'Win32_System_IO',
+    'Win32_System_WindowsProgramming',
+] }
