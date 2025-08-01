@@ -30,24 +30,7 @@ extern "system" fn LowLevelMouseProc(nCode: i32, wParam: WPARAM, lParam: LPARAM)
     if nCode >= 0 {
         #[allow(clippy::cast_possible_truncation)]
         match wParam as u32 {
-            WM_MOUSEWHEEL => {
-                let pMouseStruct = unsafe { *(lParam as *const MSLLHOOKSTRUCT) };
-                let wheelDelta = get_wheel_delta_wparam!(pMouseStruct.mouseData);
-
-                if wheelDelta > 0 {
-                    println!("Wheel Up (delta: {wheelDelta})");
-                } else {
-                    println!("Wheel Down (delta: {wheelDelta})");
-                }
-
-                RESULT.lock().unwrap().push(true);
-            }
-            WM_LBUTTONDOWN => {
-                println!("Left button down");
-                RESULT.lock().unwrap().push(true);
-            }
-            WM_LBUTTONUP => {
-                println!("Left button up");
+            WM_LBUTTONUP | WM_LBUTTONDOWN | WM_MOUSEWHEEL => {
                 RESULT.lock().unwrap().push(true);
             }
             _ => {}
@@ -59,7 +42,6 @@ extern "system" fn LowLevelMouseProc(nCode: i32, wParam: WPARAM, lParam: LPARAM)
 
 pub fn start(idhook: WINDOWS_HOOK_ID) -> Result<(), String> {
     unsafe {
-        // Установка hook
         HOOK_HANDLE = SetWindowsHookExW(idhook, Some(LowLevelMouseProc), GetModuleHandleW(ptr::null()), 0);
 
         if HOOK_HANDLE.is_null() {
