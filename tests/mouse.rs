@@ -22,7 +22,7 @@ fn test_press_and_release() {
     mouse.release();
     thread::sleep(Duration::from_millis(100));
 
-    assert_eq!(common::stop(), vec![true, true]);
+    assert_eq!(common::stop(), vec!["LBUTTON DOWN", "LBUTTON UP"]);
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn test_wheel() {
     mouse.wheel(MouseButton::Release, -1);
     thread::sleep(Duration::from_millis(100));
 
-    assert_eq!(common::stop(), vec![true, true]);
+    assert_eq!(common::stop(), vec!["WHEEL UP", "WHEEL DOWN"]);
 }
 
 #[test]
