@@ -27,6 +27,16 @@ struct MouseIO {
 }
 
 impl MouseIO {
+    /// Creates a new `MouseIO` instance with the specified parameters.
+    ///
+    /// # Arguments
+    /// * `button` - The mouse button state/action to perform
+    /// * `x` - The X-axis movement delta
+    /// * `y` - The Y-axis movement delta
+    /// * `wheel` - The mouse wheel movement delta
+    ///
+    /// # Returns
+    /// A new `MouseIO` instance with `unk1` set to 0
     const fn new(button: u8, x: i8, y: i8, wheel: i8) -> Self {
         let unk1 = 0;
         Self {
@@ -53,6 +63,13 @@ struct KeyboardIO {
 }
 
 impl KeyboardIO {
+    /// Creates a new `KeyboardIO` instance with the specified button states.
+    ///
+    /// # Arguments
+    /// * `button1` through `button6` - The states of keyboard buttons 1-6
+    ///
+    /// # Returns
+    /// A new `KeyboardIO` instance with unknown fields set to 0
     const fn new(button1: u8, button2: u8, button3: u8, button4: u8, button5: u8, button6: u8) -> Self {
         let unknown1 = 0;
         let unknown2 = 0;
@@ -103,6 +120,11 @@ impl Device {
     }
 
     /// Sends a mouse command to the device.
+    /// # Arguments
+    /// * `button` - The mouse button action to perform (e.g., left click, right click, release)
+    /// * `x` - Horizontal movement delta in pixels. Positive values move right, negative values move left
+    /// * `y` - Vertical movement delta in pixels. Positive values move down, negative values move up
+    /// * `wheel` - Mouse wheel scroll delta. Positive values scroll up, negative values scroll down
     pub fn send_mouse(&mut self, button: MouseButton, x: i8, y: i8, wheel: i8) {
         let mut io = MouseIO::new(button.into(), x, y, wheel);
 
@@ -113,6 +135,10 @@ impl Device {
     }
 
     /// Sends a keyboard command to the device.
+    /// # Arguments
+    /// * `button1` through `button6` - The states of keyboard buttons 1-6. Each parameter represents
+    ///   the desired state of a specific key position. Use `KeyboardButton::None`
+    ///   for keys that should not be pressed.
     pub fn send_keyboard(
         &mut self,
         button1: KeyboardButton,
@@ -252,6 +278,9 @@ impl Device {
     }
 
     /// Closes the handle to the device.
+    ///
+    /// This method safely closes the device handle if it's currently open,
+    /// and sets the handle to null to prevent double-closing.
     fn close(&mut self) {
         unsafe {
             if !self.filehandle.is_null() {

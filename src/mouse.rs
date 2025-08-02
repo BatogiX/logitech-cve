@@ -23,21 +23,43 @@ impl From<MouseButton> for u8 {
     }
 }
 
+/// A struct for controlling a virtual mouse.
+///
+/// It holds a mutable reference to a `Device` which is used to send the mouse commands.
 pub struct Mouse<'a> {
     device: &'a mut Device,
 }
 
 impl<'a> Mouse<'a> {
+    /// Creates a new [`Mouse`].
     pub const fn new(device: &'a mut Device) -> Self {
         Self { device }
     }
 
+    /// Performs a click and release action with a specified button.
+    ///
+    /// The button is pressed, held for `millis` milliseconds, and then released.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `MouseButton` to click.
+    /// * `millis` - The duration, in milliseconds, to hold the button down.
     pub fn click(&mut self, button: MouseButton, millis: u64) {
         self.device.send_mouse(button, 0, 0, 0);
         thread::sleep(Duration::from_millis(millis));
         self.device.send_mouse(MouseButton::Release, 0, 0, 0);
     }
 
+    /// Moves the mouse cursor to an absolute screen coordinate (x, y) with a simulated smooth movement.
+    ///
+    /// The movement is broken down into smaller steps, with a delay between each step.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `MouseButton` to hold down during the movement (e.g., for dragging). Use `MouseButton::Release` for no buttons.
+    /// * `x` - The target horizontal coordinate.
+    /// * `y` - The target vertical coordinate.
+    /// * `millis` - The delay, in milliseconds, between each small movement step.
     #[allow(clippy::cast_possible_truncation)]
     pub fn move_absolute(&mut self, button: MouseButton, x: u16, y: u16, millis: u64) {
         const MIN_STEP_SIZE: i8 = -127; // -128 Does not work for some reason
@@ -69,8 +91,8 @@ impl<'a> Mouse<'a> {
             let steps;
             match steps_x.cmp(&steps_y) {
                 Ordering::Greater => {
-                    steps = steps_x; 
-                    y_step = (delta_y / steps) as i8; 
+                    steps = steps_x;
+                    y_step = (delta_y / steps) as i8;
                 }
                 Ordering::Less => {
                     steps = steps_y;
@@ -89,29 +111,52 @@ impl<'a> Mouse<'a> {
                 thread::sleep(Duration::from_millis(millis));
             }
         } else {
-        final_step_x = delta_x as i8;
-        final_step_y = delta_y as i8;
+            final_step_x = delta_x as i8;
+            final_step_y = delta_y as i8;
         }
 
         // Ensure the final move reaches the target
         self.move_relative(button, final_step_x, final_step_y);
     }
 
+    /// Moves the mouse cursor by a relative offset from its current position.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `MouseButton` to hold down during the movement.
+    /// * `x` - The horizontal offset. Positive values move right, negative move left.
+    /// * `y` - The vertical offset. Positive values move down, negative move up.
     #[inline]
     pub fn move_relative(&mut self, button: MouseButton, x: i8, y: i8) {
         self.device.send_mouse(button, x, y, 0);
     }
 
+    /// Presses and holds a specified mouse button.
+    ///
+    /// This method only presses the button; you must call `release()` to release it.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `MouseButton` to press.
     #[inline]
     pub fn press(&mut self, button: MouseButton) {
         self.device.send_mouse(button, 0, 0, 0);
     }
 
+    /// Releases any currently pressed mouse buttons.
+    ///
+    /// This should be called after a `press()` action to release the button.
     #[inline]
     pub fn release(&mut self) {
         self.device.send_mouse(MouseButton::Release, 0, 0, 0);
     }
 
+    /// Scrolls the mouse wheel.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `MouseButton` to hold down during the scroll.
+    /// * `wheel` - The scroll amount. Positive values scroll up, negative values scroll down.
     #[inline]
     pub fn wheel(&mut self, button: MouseButton, wheel: i8) {
         self.device.send_mouse(button, 0, 0, wheel);

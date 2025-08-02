@@ -1,6 +1,7 @@
 use crate::device::Device;
 
 #[repr(u8)]
+#[derive(Copy, Clone)]
 pub enum KeyboardButton {
     A = 0x4,
     B = 0x5,
@@ -130,11 +131,26 @@ impl From<KeyboardButton> for u8 {
     }
 }
 
+/// A struct for controlling a virtual keyboard.
+///
+/// It holds a mutable reference to a `Device` which is used to send the keyboard commands.
 pub struct Keyboard<'a> {
     device: &'a mut Device,
 }
 
-impl Keyboard<'_> {
+impl<'a> Keyboard<'a> {
+    /// Creates a new [`Keyboard`].
+    pub const fn new(device: &'a mut Device) -> Self {
+        Self { device }
+    }
+
+    /// Presses a single keyboard button.
+    ///
+    /// The button is held down until a `release()` or `multi_press()` with `KeyboardButton::NONE` is called.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `KeyboardButton` to press.
     pub fn press(&mut self, button: KeyboardButton) {
         self.device.send_keyboard(
             button,
@@ -146,6 +162,9 @@ impl Keyboard<'_> {
         );
     }
 
+    /// Releases all currently pressed keyboard buttons.
+    ///
+    /// This effectively sends a "no keys pressed" command to the device.
     pub fn release(&mut self) {
         self.device.send_keyboard(
             KeyboardButton::NONE,
@@ -157,6 +176,18 @@ impl Keyboard<'_> {
         );
     }
 
+    /// Presses up to six keyboard buttons simultaneously.
+    ///
+    /// This can be used for pressing modifier keys and other keys at the same time.
+    ///
+    /// # Arguments
+    ///
+    /// * `button1` - The first `KeyboardButton` to press.
+    /// * `button2` - The second `KeyboardButton` to press.
+    /// * `button3` - The third `KeyboardButton` to press.
+    /// * `button4` - The fourth `KeyboardButton` to press.
+    /// * `button5` - The fifth `KeyboardButton` to press.
+    /// * `button6` - The sixth `KeyboardButton` to press.
     pub fn multi_press(
         &mut self,
         button1: KeyboardButton,
