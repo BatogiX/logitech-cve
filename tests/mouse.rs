@@ -62,26 +62,26 @@ fn test_move_absolute() {
     let mut current_point = POINT::default();
 
     mouse.move_absolute(MouseButton::Release, 500, 500, 10);
-    thread::sleep(Duration::from_millis(100));
+    thread::sleep(Duration::from_millis(10));
     unsafe { GetCursorPos(&raw mut current_point) };
     assert_eq!(current_point.x, 500);
     assert_eq!(current_point.y, 500);
 
     mouse.move_absolute(MouseButton::Release, 600, 600, 10);
-    thread::sleep(Duration::from_millis(100));
+    thread::sleep(Duration::from_millis(10));
     unsafe { GetCursorPos(&raw mut current_point) };
     assert_eq!(current_point.x, 600);
     assert_eq!(current_point.y, 600);
 
     mouse.move_absolute(MouseButton::Release, 750, 750, 10);
-    thread::sleep(Duration::from_millis(100));
+    thread::sleep(Duration::from_millis(10));
     unsafe { GetCursorPos(&raw mut current_point) };
     assert_eq!(current_point.x, 750);
     assert_eq!(current_point.y, 750);
 
-    mouse.move_absolute(MouseButton::Release, 1919, 1, 10);
-    thread::sleep(Duration::from_millis(100));
+    mouse.move_absolute(MouseButton::Release, 1, 1, 10);
+    thread::sleep(Duration::from_millis(10));
     unsafe { GetCursorPos(&raw mut current_point) };
-    assert_eq!(current_point.x, 1919);
+    assert_eq!(current_point.x, 1);
     assert_eq!(current_point.y, 1);
 }

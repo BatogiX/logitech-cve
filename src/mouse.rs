@@ -1,4 +1,4 @@
-use std::{thread, time::Duration};
+use std::{cmp::Ordering, thread, time::Duration};
 
 use windows_sys::Win32::{Foundation::POINT, UI::WindowsAndMessaging::GetCursorPos};
 
@@ -38,7 +38,19 @@ impl<'a> Mouse<'a> {
         self.device.send_mouse(MouseButton::Release, 0, 0, 0);
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     pub fn move_absolute(&mut self, button: MouseButton, x: u16, y: u16, millis: u64) {
+        const MIN_STEP_SIZE: i8 = -127; // -128 Does not work for some reason
+        const MAX_STEP_SIZE: i8 = 127;
+
+        #[inline]
+        fn calculate_steps_and_size(delta: i32) -> (i32, i8) {
+            if delta < 0 {
+                return (delta / i32::from(MIN_STEP_SIZE), MIN_STEP_SIZE);
+            }
+            (delta / i32::from(MAX_STEP_SIZE), MAX_STEP_SIZE)
+        }
+
         // Get current mouse position
         let mut current_point = POINT::default();
         unsafe { GetCursorPos(&raw mut current_point) };
@@ -48,60 +60,59 @@ impl<'a> Mouse<'a> {
         let delta_y = i32::from(y) - current_point.y;
 
         // Calculate the number of steps and step sizes for both X and Y
-        let (count_x, mut x_step): (i32, i8) = if current_point.x > i32::from(x) {
-            (delta_x / -127, -127)
-        } else {
-            (delta_x / 127, 127)
-        };
+        let (steps_x, mut x_step) = calculate_steps_and_size(delta_x);
+        let (steps_y, mut y_step) = calculate_steps_and_size(delta_y);
 
-        let (count_y, mut y_step): (i32, i8) = if current_point.y > i32::from(y) {
-            (delta_y / -127, -127)
-        } else {
-            (delta_y / 127, 127)
-        };
-
-        let (final_x, final_y);
-        if count_x > 0 || count_y > 0 {
+        let (final_step_x, final_step_y);
+        if steps_x > 0 || steps_y > 0 {
             // Determine which axis takes more steps
-            let count;
-            if count_x > count_y {
-                count = count_x;
-                y_step = (delta_y / count) as i8;
-            } else if count_y > count_x {
-                count = count_y;
-                x_step = (delta_x / count) as i8;
-            } else {
-                count = count_x; // or count_y, they are equal
+            let steps;
+            match steps_x.cmp(&steps_y) {
+                Ordering::Greater => {
+                    steps = steps_x; 
+                    y_step = (delta_y / steps) as i8; 
+                }
+                Ordering::Less => {
+                    steps = steps_y;
+                    x_step = (delta_x / steps) as i8;
+                }
+                Ordering::Equal => {
+                    steps = steps_x; // or steps_y, they are equal
+                }
             }
 
-            final_x = (delta_x - (x_step as i32 * count)) as i8;
-            final_y = (delta_y - (y_step as i32 * count)) as i8;
+            final_step_x = (delta_x - (i32::from(x_step) * steps)) as i8;
+            final_step_y = (delta_y - (i32::from(y_step) * steps)) as i8;
             // Perform the movement in steps
-            for _ in 0..count {
+            for _ in 0..steps {
                 self.move_relative(button, x_step, y_step);
                 thread::sleep(Duration::from_millis(millis));
             }
         } else {
-            final_x = (delta_x) as i8;
-            final_y = (delta_y) as i8;
+        final_step_x = delta_x as i8;
+        final_step_y = delta_y as i8;
         }
 
         // Ensure the final move reaches the target
-        self.move_relative(button, final_x, final_y);
+        self.move_relative(button, final_step_x, final_step_y);
     }
 
+    #[inline]
     pub fn move_relative(&mut self, button: MouseButton, x: i8, y: i8) {
         self.device.send_mouse(button, x, y, 0);
     }
 
+    #[inline]
     pub fn press(&mut self, button: MouseButton) {
         self.device.send_mouse(button, 0, 0, 0);
     }
 
+    #[inline]
     pub fn release(&mut self) {
         self.device.send_mouse(MouseButton::Release, 0, 0, 0);
     }
 
+    #[inline]
     pub fn wheel(&mut self, button: MouseButton, wheel: i8) {
         self.device.send_mouse(button, 0, 0, wheel);
     }
