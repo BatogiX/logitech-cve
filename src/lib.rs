@@ -1,8 +1,9 @@
+//! # Logitech CVE library.
+//! `logitech-cve` provides modules `device`, `keyboard` and `mouse`.
+
 pub mod device;
 pub mod keyboard;
 pub mod mouse;
-mod util;
 
-pub use device::Device;
-pub use keyboard::{Keyboard, KeyboardButton};
-pub use mouse::{Mouse, MouseButton};
+/// Utility functions for the Logitech CVE library.
+mod util;

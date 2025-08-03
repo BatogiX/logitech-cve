@@ -1,8 +1,10 @@
 use crate::device::Device;
+use core::time::Duration;
+use std::thread;
 
 #[repr(u8)]
 #[derive(Copy, Clone)]
-pub enum KeyboardButton {
+pub enum Key {
     A = 0x4,
     B = 0x5,
     C = 0x6,
@@ -125,55 +127,66 @@ pub enum KeyboardButton {
     NONE = 0x0,
 }
 
-impl From<KeyboardButton> for u8 {
-    fn from(button: KeyboardButton) -> Self {
+impl From<Key> for u8 {
+    #[inline]
+    fn from(button: Key) -> Self {
         button as Self
     }
 }
 
 /// A struct for controlling a virtual keyboard.
 ///
-/// It holds a mutable reference to a `Device` which is used to send the keyboard commands.
+/// It holds a reference to a `Device` which is used to send the keyboard commands.
 pub struct Keyboard<'a> {
-    device: &'a mut Device,
+    /// A reference to the device used to send keyboard commands.
+    device: &'a Device,
 }
 
 impl<'a> Keyboard<'a> {
     /// Creates a new [`Keyboard`].
-    pub const fn new(device: &'a mut Device) -> Self {
+    #[inline]
+    #[must_use]
+    pub const fn new(device: &'a Device) -> Self {
         Self { device }
     }
 
     /// Presses a single keyboard button.
     ///
-    /// The button is held down until a `release()` or `multi_press()` with `KeyboardButton::NONE` is called.
+    /// The button is held down until a `release()` or `multi_press()` with `Key::NONE` is called.
     ///
     /// # Arguments
     ///
-    /// * `button` - The `KeyboardButton` to press.
-    pub fn press(&mut self, button: KeyboardButton) {
-        self.device.send_keyboard(
-            button,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-        );
+    /// * `button` - The `Key` to press.
+    #[inline]
+    pub fn press(&self, button: Key) {
+        self.device
+            .call_keyboard(button, Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
     }
 
     /// Releases all currently pressed keyboard buttons.
     ///
     /// This effectively sends a "no keys pressed" command to the device.
-    pub fn release(&mut self) {
-        self.device.send_keyboard(
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-            KeyboardButton::NONE,
-        );
+    #[inline]
+    pub fn release(&self) {
+        self.device
+            .call_keyboard(Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
+    }
+
+    /// Presses and releases a single keyboard button.
+    ///
+    /// The button is pressed down, held for the specified duration, then released.
+    ///
+    /// # Arguments
+    ///
+    /// * `button` - The `Key` to press and release.
+    /// * `millis` - The duration in milliseconds to hold the button down before releasing it.
+    #[inline]
+    pub fn press_and_release(&self, button: Key, millis: u64) {
+        self.device
+            .call_keyboard(button, Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
+        thread::sleep(Duration::from_millis(millis));
+        self.device
+            .call_keyboard(Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
     }
 
     /// Presses up to six keyboard buttons simultaneously.
@@ -182,22 +195,15 @@ impl<'a> Keyboard<'a> {
     ///
     /// # Arguments
     ///
-    /// * `button1` - The first `KeyboardButton` to press.
-    /// * `button2` - The second `KeyboardButton` to press.
-    /// * `button3` - The third `KeyboardButton` to press.
-    /// * `button4` - The fourth `KeyboardButton` to press.
-    /// * `button5` - The fifth `KeyboardButton` to press.
-    /// * `button6` - The sixth `KeyboardButton` to press.
-    pub fn multi_press(
-        &mut self,
-        button1: KeyboardButton,
-        button2: KeyboardButton,
-        button3: KeyboardButton,
-        button4: KeyboardButton,
-        button5: KeyboardButton,
-        button6: KeyboardButton,
-    ) {
+    /// * `button1` - The first `Key` to press.
+    /// * `button2` - The second `Key` to press.
+    /// * `button3` - The third `Key` to press.
+    /// * `button4` - The fourth `Key` to press.
+    /// * `button5` - The fifth `Key` to press.
+    /// * `button6` - The sixth `Key` to press.
+    #[inline]
+    pub fn multi_press(&self, button1: Key, button2: Key, button3: Key, button4: Key, button5: Key, button6: Key) {
         self.device
-            .send_keyboard(button1, button2, button3, button4, button5, button6);
+            .call_keyboard(button1, button2, button3, button4, button5, button6);
     }
 }

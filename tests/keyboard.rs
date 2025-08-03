@@ -1,6 +1,9 @@
-use std::{thread, time::Duration};
-
-use logitech_cve::{Device, Keyboard, KeyboardButton};
+use core::time::Duration;
+use logitech_cve::{
+    device::Device,
+    keyboard::{Key, Keyboard},
+};
+use std::thread;
 use windows_sys::Win32::UI::{
     Input::KeyboardAndMouse::{VK_A, VK_B, VK_C, VK_D, VK_E, VK_F},
     WindowsAndMessaging::WH_KEYBOARD_LL,
@@ -9,33 +12,26 @@ use windows_sys::Win32::UI::{
 mod common;
 
 #[test]
-fn test_press_and_release() {
-    let mut device = Device::try_new().unwrap();
-    let mut keyboard = Keyboard::new(&mut device);
+fn press_and_release() {
+    let device = Device::try_new().unwrap();
+    let keyboard = Keyboard::new(&device);
 
-    thread::spawn(|| common::start(WH_KEYBOARD_LL).expect("Failed to start keyboard hook"));
+    thread::spawn(|| common::start(WH_KEYBOARD_LL));
     thread::sleep(Duration::from_millis(100));
-    keyboard.press(KeyboardButton::A);
+    keyboard.press(Key::A);
     keyboard.release();
     thread::sleep(Duration::from_millis(100));
     assert_eq!(common::stop(), vec![format!("{VK_A} DOWN"), format!("{VK_A} UP")]);
 }
 
 #[test]
-fn test_multi_press() {
-    let mut device = Device::try_new().unwrap();
-    let mut keyboard = Keyboard::new(&mut device);
+fn multi_press() {
+    let device = Device::try_new().unwrap();
+    let keyboard = Keyboard::new(&device);
 
-    thread::spawn(|| common::start(WH_KEYBOARD_LL).expect("Failed to start keyboard hook"));
+    thread::spawn(|| common::start(WH_KEYBOARD_LL));
     thread::sleep(Duration::from_millis(100));
-    keyboard.multi_press(
-        KeyboardButton::A,
-        KeyboardButton::B,
-        KeyboardButton::C,
-        KeyboardButton::D,
-        KeyboardButton::E,
-        KeyboardButton::F,
-    );
+    keyboard.multi_press(Key::A, Key::B, Key::C, Key::D, Key::E, Key::F);
     thread::sleep(Duration::from_millis(100));
     assert_eq!(
         common::stop(),

@@ -1,4 +1,5 @@
-use std::{cmp::Ordering, thread, time::Duration};
+use core::{cmp::Ordering, time::Duration};
+use std::thread;
 
 use windows_sys::Win32::{Foundation::POINT, UI::WindowsAndMessaging::GetCursorPos};
 
@@ -18,6 +19,7 @@ pub enum MouseButton {
 }
 
 impl From<MouseButton> for u8 {
+    #[inline]
     fn from(button: MouseButton) -> Self {
         button as Self
     }
@@ -25,14 +27,17 @@ impl From<MouseButton> for u8 {
 
 /// A struct for controlling a virtual mouse.
 ///
-/// It holds a mutable reference to a `Device` which is used to send the mouse commands.
+/// It holds a reference to a `Device` which is used to send the mouse commands.
 pub struct Mouse<'a> {
-    device: &'a mut Device,
+    /// Reference to the device used for sending mouse commands.
+    device: &'a Device,
 }
 
 impl<'a> Mouse<'a> {
     /// Creates a new [`Mouse`].
-    pub const fn new(device: &'a mut Device) -> Self {
+    #[must_use]
+    #[inline]
+    pub const fn new(device: &'a Device) -> Self {
         Self { device }
     }
 
@@ -44,10 +49,11 @@ impl<'a> Mouse<'a> {
     ///
     /// * `button` - The `MouseButton` to click.
     /// * `millis` - The duration, in milliseconds, to hold the button down.
-    pub fn click(&mut self, button: MouseButton, millis: u64) {
-        self.device.send_mouse(button, 0, 0, 0);
+    #[inline]
+    pub fn click(&self, button: MouseButton, millis: u64) {
+        self.device.call_mouse(button, 0, 0, 0);
         thread::sleep(Duration::from_millis(millis));
-        self.device.send_mouse(MouseButton::Release, 0, 0, 0);
+        self.device.call_mouse(MouseButton::Release, 0, 0, 0);
     }
 
     /// Moves the mouse cursor to an absolute screen coordinate (x, y) with a simulated smooth movement.
@@ -60,8 +66,12 @@ impl<'a> Mouse<'a> {
     /// * `x` - The target horizontal coordinate.
     /// * `y` - The target vertical coordinate.
     /// * `millis` - The delay, in milliseconds, between each small movement step.
-    #[allow(clippy::cast_possible_truncation)]
-    pub fn move_absolute(&mut self, button: MouseButton, x: u16, y: u16, millis: u64) {
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Casting is safe here because mouse movement steps are always within i8 range."
+    )]
+    #[inline]
+    pub fn move_absolute(&self, button: MouseButton, x: u16, y: u16, millis: u64) {
         const MIN_STEP_SIZE: i8 = -127; // -128 Does not work for some reason
         const MAX_STEP_SIZE: i8 = 127;
 
@@ -75,7 +85,10 @@ impl<'a> Mouse<'a> {
 
         // Get current mouse position
         let mut current_point = POINT::default();
-        unsafe { GetCursorPos(&raw mut current_point) };
+        // SAFETY: `current_point` is a valid pointer to a POINT struct, as required by GetCursorPos.
+        unsafe {
+            GetCursorPos(&raw mut current_point);
+        };
 
         // Calculate deltas
         let delta_x = i32::from(x) - current_point.x;
@@ -127,8 +140,8 @@ impl<'a> Mouse<'a> {
     /// * `x` - The horizontal offset. Positive values move right, negative move left.
     /// * `y` - The vertical offset. Positive values move down, negative move up.
     #[inline]
-    pub fn move_relative(&mut self, button: MouseButton, x: i8, y: i8) {
-        self.device.send_mouse(button, x, y, 0);
+    pub fn move_relative(&self, button: MouseButton, x: i8, y: i8) {
+        self.device.call_mouse(button, x, y, 0);
     }
 
     /// Presses and holds a specified mouse button.
@@ -139,16 +152,16 @@ impl<'a> Mouse<'a> {
     ///
     /// * `button` - The `MouseButton` to press.
     #[inline]
-    pub fn press(&mut self, button: MouseButton) {
-        self.device.send_mouse(button, 0, 0, 0);
+    pub fn press(&self, button: MouseButton) {
+        self.device.call_mouse(button, 0, 0, 0);
     }
 
     /// Releases any currently pressed mouse buttons.
     ///
     /// This should be called after a `press()` action to release the button.
     #[inline]
-    pub fn release(&mut self) {
-        self.device.send_mouse(MouseButton::Release, 0, 0, 0);
+    pub fn release(&self) {
+        self.device.call_mouse(MouseButton::Release, 0, 0, 0);
     }
 
     /// Scrolls the mouse wheel.
@@ -158,7 +171,7 @@ impl<'a> Mouse<'a> {
     /// * `button` - The `MouseButton` to hold down during the scroll.
     /// * `wheel` - The scroll amount. Positive values scroll up, negative values scroll down.
     #[inline]
-    pub fn wheel(&mut self, button: MouseButton, wheel: i8) {
-        self.device.send_mouse(button, 0, 0, wheel);
+    pub fn wheel(&self, button: MouseButton, wheel: i8) {
+        self.device.call_mouse(button, 0, 0, wheel);
     }
 }

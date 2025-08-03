@@ -1,4 +1,4 @@
-use std::{mem, ptr};
+use core::{mem, ptr};
 
 use windows_sys::{
     Wdk::Foundation::OBJECT_ATTRIBUTES,
@@ -8,7 +8,8 @@ use windows_sys::{
     },
 };
 
-#[allow(clippy::many_single_char_names, non_snake_case)]
+/// Initializes an `OBJECT_ATTRIBUTES` structure for use with Windows API calls.
+#[expect(clippy::many_single_char_names, non_snake_case, reason = "Windows API style")]
 pub const fn InitializeObjectAttributes(
     p: &mut OBJECT_ATTRIBUTES,
     n: *const UNICODE_STRING,
@@ -16,7 +17,7 @@ pub const fn InitializeObjectAttributes(
     r: HANDLE,
     s: *const SECURITY_DESCRIPTOR,
 ) {
-    #[allow(clippy::cast_possible_truncation)] // OBJECT_ATTRIBUTES is only 48 bytes so it should fit in u32
+    #[expect(clippy::cast_possible_truncation, reason = "OBJECT_ATTRIBUTES is only 48 bytes")]
     const LENGTH: u32 = mem::size_of::<OBJECT_ATTRIBUTES>() as u32;
 
     p.Length = LENGTH;
