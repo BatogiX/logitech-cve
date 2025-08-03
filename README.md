@@ -1,6 +1,6 @@
 # logitech-cve
 
-A Rust project for analyzing and demonstrating vulnerabilities related to Logitech devices.
+A Rust library for interacting with Logitech virtual driver. 
 
 # Usage
 ## Mouse
@@ -8,7 +8,7 @@ A Rust project for analyzing and demonstrating vulnerabilities related to Logite
 ```rust
 use logitech_cve::{
     device::Device,
-    mouse::{Mouse, MouseButton},
+    mouse::{Mouse, MouseButton}
 };
 fn main() {
 	let device = Device::try_new().expect("Logitech G HUB 2021.11.1775 is not installed"); // Req for Driver Handling 
@@ -34,7 +34,7 @@ fn main() {
 ```rust
 use logitech_cve::{
     device::Device,
-    keyboard::{Keyboard, Key},
+    keyboard::{Keyboard, Key}
 };
 fn main() {
 	let device = Device::try_new().expect("Logitech G HUB 2021.11.1775 is not installed"); // Req for Driver Handling 
