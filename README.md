@@ -26,6 +26,7 @@ fn main() {
 	mouse.press(MouseButtons::Left); // Press
 	std::thread::sleep(std::time::Duration(100)); // Custom sleep
 	mouse.release(); // Release
+}
 ```
 
 ## Keyboard
@@ -35,7 +36,7 @@ use logitech_cve::{
     device::Device,
     keyboard::{Keyboard, Key},
 };
-int main() {
+fn main() {
 	let device = Device::try_new().expect("Logitech G HUB 2021.11.1775 is not installed"); // Req for Driver Handling 
 	let keyboard = Keyboard::new(&device); // Init Keyboard
 
