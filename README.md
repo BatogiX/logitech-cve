@@ -32,7 +32,7 @@ fn main() {
 ```
 
 ## Keyboard
-### Example Use
+### Example
 ```rust
 use logitech_cve::{
     device::Device,

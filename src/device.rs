@@ -102,7 +102,6 @@ impl KeyboardIO {
 }
 
 /// Represents a handle to the virtual input device.
-/// Represents a handle to the virtual input device.
 pub struct Device {
     /// Handle to the device file.
     filehandle: HANDLE,
@@ -293,12 +292,12 @@ impl Device {
     /// This method safely closes the device handle if it's currently open,
     /// and sets the handle to null to prevent double-closing.
     fn close(&mut self) {
-        // SAFETY: ZwClose is only called if filehandle is not null, and filehandle is set to null after closing to prevent double-closing.
-        unsafe {
-            if !self.filehandle.is_null() {
+        if !self.filehandle.is_null() {
+            // SAFETY: ZwClose is only called if filehandle is not null, and filehandle is set to null after closing to prevent double-closing.
+            unsafe {
                 ZwClose(self.filehandle);
-                self.filehandle = ptr::null_mut();
-            }
+            };
+            self.filehandle = ptr::null_mut();
         }
     }
 }
