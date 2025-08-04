@@ -36,7 +36,6 @@ pub struct Mouse<'a> {
 impl<'a> Mouse<'a> {
     /// Creates a new [`Mouse`].
     #[must_use]
-    #[inline]
     pub const fn new(device: &'a Device) -> Self {
         Self { device }
     }
@@ -49,7 +48,6 @@ impl<'a> Mouse<'a> {
     ///
     /// * `button` - The `MouseButton` to click.
     /// * `millis` - The duration, in milliseconds, to hold the button down.
-    #[inline]
     pub fn click(&self, button: MouseButton, millis: u64) {
         self.device.call_mouse(button, 0, 0, 0);
         thread::sleep(Duration::from_millis(millis));
@@ -70,7 +68,6 @@ impl<'a> Mouse<'a> {
         clippy::cast_possible_truncation,
         reason = "Casting is safe here because mouse movement steps are always within i8 range."
     )]
-    #[inline]
     pub fn move_absolute(&self, button: MouseButton, x: u16, y: u16, millis: u64) {
         const MIN_STEP_SIZE: i8 = -127; // -128 Does not work for some reason
         const MAX_STEP_SIZE: i8 = 127;

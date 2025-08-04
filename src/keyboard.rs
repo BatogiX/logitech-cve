@@ -144,7 +144,6 @@ pub struct Keyboard<'a> {
 
 impl<'a> Keyboard<'a> {
     /// Creates a new [`Keyboard`].
-    #[inline]
     #[must_use]
     pub const fn new(device: &'a Device) -> Self {
         Self { device }
@@ -180,7 +179,6 @@ impl<'a> Keyboard<'a> {
     ///
     /// * `button` - The `Key` to press and release.
     /// * `millis` - The duration in milliseconds to hold the button down before releasing it.
-    #[inline]
     pub fn press_and_release(&self, button: Key, millis: u64) {
         self.device
             .call_keyboard(button, Key::NONE, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
