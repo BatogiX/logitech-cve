@@ -15,8 +15,8 @@ fn main() {
 	let device = Device::try_new().expect("Logitech G HUB 2021.11.1775 is not installed"); // Req for Driver Handling 
 	let mouse = Mouse::new(&device); // Init Mouse
 
-	mouse.move_relative(100, 100); // (x,y) relative
-    mouse.move_absolute(100, 100); // (x,y) absolute
+	mouse.move_relative(MouseButtons::Release, 100, 100); // (x,y) relative
+    mouse.move_absolute(MouseButtons::Left, 100, 100, 30); // (x,y) absolute and 30ms between each step
 	
 	mouse.wheel(1); // Scroll up
 	mouse.wheel(-1); // Scroll down
@@ -55,3 +55,7 @@ fn main() {
 ## Requirements
 
 - Logitech G HUB 2021.11.1775
+
+## Credits
+
+- [ekknod/logitech-cve](https://github.com/ekknod/logitech-cve)
