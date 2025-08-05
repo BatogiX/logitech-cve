@@ -1,6 +1,6 @@
 [package]
 name = "logitech-cve"
-version = "1.4.0"
+version = "1.4.1"
 edition = "2024"
 description = "A Rust library for interacting with Logitech virtual driver."
 license = "MIT OR Apache-2.0"

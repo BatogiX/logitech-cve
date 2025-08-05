@@ -165,30 +165,30 @@ impl TryFrom<char> for Key {
             'X' => Ok(Self::X),
             'Y' => Ok(Self::Y),
             'Z' => Ok(Self::Z),
-            '1' | '!' => Ok(Self::N1), // ! for Shift + 1
-            '2' | '@' => Ok(Self::N2), // @ for Shift + 2
-            '3' | '#' => Ok(Self::N3), // # for Shift + 3
-            '4' | '$' => Ok(Self::N4), // $ for Shift + 4
-            '5' | '%' => Ok(Self::N5), // % for Shift + 5
-            '6' | '^' => Ok(Self::N6), // ^ for Shift + 6
-            '7' | '&' => Ok(Self::N7), // & for Shift + 7
-            '8' | '*' => Ok(Self::N8), // * for Shift + 8
-            '9' | '(' => Ok(Self::N9), // ( for Shift + 9
-            '0' | ')' => Ok(Self::N0), // ) for Shift + 0
             '\n' => Ok(Self::Enter),
             '\t' => Ok(Self::Tab),
             ' ' => Ok(Self::Space),
-            '-' => Ok(Self::Minus),
-            '=' => Ok(Self::Equal),
-            '[' => Ok(Self::SquareBracketLeft),
-            ']' => Ok(Self::SquareBracketRight),
-            '\\' => Ok(Self::BackSlash),
-            ';' => Ok(Self::Column),
-            '\'' => Ok(Self::Quote),
-            '`' => Ok(Self::BackTick),
-            ',' => Ok(Self::Comma),
-            '.' => Ok(Self::Period),
-            '/' => Ok(Self::Slash),
+            '1' | '!' => Ok(Self::N1),                 // ! for Shift + 1
+            '2' | '@' => Ok(Self::N2),                 // @ for Shift + 2
+            '3' | '#' => Ok(Self::N3),                 // # for Shift + 3
+            '4' | '$' => Ok(Self::N4),                 // $ for Shift + 4
+            '5' | '%' => Ok(Self::N5),                 // % for Shift + 5
+            '6' | '^' => Ok(Self::N6),                 // ^ for Shift + 6
+            '7' | '&' => Ok(Self::N7),                 // & for Shift + 7
+            '8' | '*' => Ok(Self::N8),                 // * for Shift + 8
+            '9' | '(' => Ok(Self::N9),                 // ( for Shift + 9
+            '0' | ')' => Ok(Self::N0),                 // ) for Shift + 0
+            '-' | '_' => Ok(Self::Minus),              // _ for Shift + -
+            '=' => Ok(Self::Equal),                    // + for Shift + =
+            '[' | '{' => Ok(Self::SquareBracketLeft),  // { for Shift + [
+            ']' | '}' => Ok(Self::SquareBracketRight), // } for Shift + ]
+            ';' | ':' => Ok(Self::Column),             // : for Shift + ;
+            '\'' | '"' => Ok(Self::Quote),             // " for Shift + '
+            '\\' | '|' => Ok(Self::BackSlash),         // | for Shift + \
+            ',' | '<' => Ok(Self::Comma),              // < for Shift + ,
+            '.' | '>' => Ok(Self::Period),             // > for Shift + .
+            '/' | '?' => Ok(Self::Slash),              // ? for Shift + /
+            '`' | '~' => Ok(Self::BackTick),           // ~ for Shift + `
             _ => Err(format!("Unsupported character: {c}")),
         }
     }
@@ -297,7 +297,28 @@ impl<'a> Keyboard<'a> {
                 | '.'
                 | '/' => self.press_and_release(key, millis),
 
-                'A'..='Z' | '!' | '@' | '#' | '$' | '%' | '^' | '&' | '*' | '(' | ')' => {
+                'A'..='Z'
+                | '!'
+                | '@'
+                | '#'
+                | '$'
+                | '%'
+                | '^'
+                | '&'
+                | '*'
+                | '('
+                | ')'
+                | '_'
+                | '+'
+                | '{'
+                | '}'
+                | ':'
+                | '"'
+                | '|'
+                | '<'
+                | '>'
+                | '?'
+                | '~' => {
                     self.multi_press(Key::Lshift, key, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
                     thread::sleep(Duration::from_millis(millis));
                     self.release();
