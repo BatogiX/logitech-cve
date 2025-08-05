@@ -49,6 +49,9 @@ fn main() {
 	keyboard.multi_press(Key::A, Key::B, Key::C, Key::NONE, Key::NONE, Key::NONE); 
 	std::thread::sleep(std::time::Duration(100)); // Custom sleep
 	keyboard.release(); // Release all buttons
+
+	// Types "Hello, World!" with 50ms before release each button
+	keyboard.type_string("Hello, World!", 50).expect("Should be OK"); 
 }
 ```
 

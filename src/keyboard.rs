@@ -134,6 +134,66 @@ impl From<Key> for u8 {
     }
 }
 
+impl TryFrom<char> for Key {
+    type Error = String;
+
+    fn try_from(c: char) -> Result<Self, Self::Error> {
+        match c.to_ascii_uppercase() {
+            'A' => Ok(Self::A),
+            'B' => Ok(Self::B),
+            'C' => Ok(Self::C),
+            'D' => Ok(Self::D),
+            'E' => Ok(Self::E),
+            'F' => Ok(Self::F),
+            'G' => Ok(Self::G),
+            'H' => Ok(Self::H),
+            'I' => Ok(Self::I),
+            'J' => Ok(Self::J),
+            'K' => Ok(Self::K),
+            'L' => Ok(Self::L),
+            'M' => Ok(Self::M),
+            'N' => Ok(Self::N),
+            'O' => Ok(Self::O),
+            'P' => Ok(Self::P),
+            'Q' => Ok(Self::Q),
+            'R' => Ok(Self::R),
+            'S' => Ok(Self::S),
+            'T' => Ok(Self::T),
+            'U' => Ok(Self::U),
+            'V' => Ok(Self::V),
+            'W' => Ok(Self::W),
+            'X' => Ok(Self::X),
+            'Y' => Ok(Self::Y),
+            'Z' => Ok(Self::Z),
+            '1' | '!' => Ok(Self::N1), // ! for Shift + 1
+            '2' | '@' => Ok(Self::N2), // @ for Shift + 2
+            '3' | '#' => Ok(Self::N3), // # for Shift + 3
+            '4' | '$' => Ok(Self::N4), // $ for Shift + 4
+            '5' | '%' => Ok(Self::N5), // % for Shift + 5
+            '6' | '^' => Ok(Self::N6), // ^ for Shift + 6
+            '7' | '&' => Ok(Self::N7), // & for Shift + 7
+            '8' | '*' => Ok(Self::N8), // * for Shift + 8
+            '9' | '(' => Ok(Self::N9), // ( for Shift + 9
+            '0' | ')' => Ok(Self::N0), // ) for Shift + 0
+            '\n' => Ok(Self::Enter),
+            '\t' => Ok(Self::Tab),
+            ' ' => Ok(Self::Space),
+            '-' => Ok(Self::Minus),
+            '=' => Ok(Self::Equal),
+            '[' => Ok(Self::SquareBracketLeft),
+            ']' => Ok(Self::SquareBracketRight),
+            '\\' => Ok(Self::BackSlash),
+            ';' => Ok(Self::Column),
+            '\'' => Ok(Self::Quote),
+            '`' => Ok(Self::BackTick),
+            ',' => Ok(Self::Comma),
+            '.' => Ok(Self::Period),
+            '/' => Ok(Self::Slash),
+            _ => Err(format!("Unsupported character: {c}")),
+        }
+    }
+}
+
 /// A struct for controlling a virtual keyboard.
 ///
 /// It holds a reference to a `Device` which is used to send the keyboard commands.
@@ -203,5 +263,49 @@ impl<'a> Keyboard<'a> {
     pub fn multi_press(&self, button1: Key, button2: Key, button3: Key, button4: Key, button5: Key, button6: Key) {
         self.device
             .call_keyboard(button1, button2, button3, button4, button5, button6);
+    }
+
+    /// Types a string by simulating individual key presses for each character.
+    ///
+    /// # Arguments
+    ///
+    /// * `string` - The string to be typed.
+    /// * `millis` - The duration in milliseconds to hold the button down before releasing it.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if a character in the input string
+    /// cannot be converted into a valid `Key` enum variant.
+    pub fn type_string(&self, string: &str, millis: u64) -> Result<(), String> {
+        for c in string.chars() {
+            let key = Key::try_from(c)?;
+            match c {
+                'a'..='z'
+                | '0'..='9'
+                | '\n'
+                | '\t'
+                | ' '
+                | '-'
+                | '='
+                | '['
+                | ']'
+                | '\\'
+                | ';'
+                | '\''
+                | '`'
+                | ','
+                | '.'
+                | '/' => self.press_and_release(key, millis),
+
+                'A'..='Z' | '!' | '@' | '#' | '$' | '%' | '^' | '&' | '*' | '(' | ')' => {
+                    self.multi_press(Key::Lshift, key, Key::NONE, Key::NONE, Key::NONE, Key::NONE);
+                    thread::sleep(Duration::from_millis(millis));
+                    self.release();
+                }
+                _ => {}
+            }
+        }
+
+        Ok(())
     }
 }
