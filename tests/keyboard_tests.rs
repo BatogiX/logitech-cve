@@ -23,7 +23,7 @@ fn press_and_release() {
     keyboard.press(Key::A);
     keyboard.release();
     thread::sleep(Duration::from_millis(100));
-    assert_eq!(common::stop(), vec![format!("{VK_A} DOWN"), format!("{VK_A} UP")]);
+    assert_eq!(vec![format!("{VK_A} DOWN"), format!("{VK_A} UP")], common::stop());
 }
 
 #[test]
@@ -36,7 +36,6 @@ fn multi_press() {
     keyboard.multi_press(Key::A, Key::B, Key::C, Key::D, Key::E, Key::F);
     thread::sleep(Duration::from_millis(100));
     assert_eq!(
-        common::stop(),
         vec![
             format!("{VK_A} DOWN"),
             format!("{VK_B} DOWN"),
@@ -44,7 +43,8 @@ fn multi_press() {
             format!("{VK_D} DOWN"),
             format!("{VK_E} DOWN"),
             format!("{VK_F} DOWN"),
-        ]
+        ],
+        common::stop()
     );
     keyboard.release();
 }
@@ -59,7 +59,6 @@ fn type_string() {
     keyboard.type_string("Hello, World!", 50).expect("Should be OK");
     thread::sleep(Duration::from_millis(100));
     assert_eq!(
-        common::stop(),
         vec![
             format!("{VK_LSHIFT} DOWN"),
             format!("{VK_H} DOWN"),
@@ -92,8 +91,9 @@ fn type_string() {
             format!("{VK_LSHIFT} DOWN"),
             format!("{VK_1} DOWN"),
             format!("{VK_LSHIFT} UP"),
-            format!("{VK_1} UP"),
-        ]
+            format!("{VK_1} UP")
+        ],
+        common::stop()
     );
     keyboard.release();
 }

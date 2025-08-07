@@ -23,7 +23,7 @@ fn press_and_release() {
     mouse.release();
     thread::sleep(Duration::from_millis(100));
 
-    assert_eq!(common::stop(), vec!["LBUTTON DOWN", "LBUTTON UP"]);
+    assert_eq!(vec!["LBUTTON DOWN", "LBUTTON UP"], common::stop());
 }
 
 #[test]
@@ -37,7 +37,7 @@ fn wheel() {
     mouse.wheel(MouseButton::Release, -1);
     thread::sleep(Duration::from_millis(100));
 
-    assert_eq!(common::stop(), vec!["WHEEL UP", "WHEEL DOWN"]);
+    assert_eq!(vec!["WHEEL UP", "WHEEL DOWN"], common::stop());
 }
 
 #[test]
@@ -74,8 +74,8 @@ fn move_absolute() {
     unsafe {
         GetCursorPos(&raw mut current_point);
     };
-    assert_eq!(current_point.x, 500);
-    assert_eq!(current_point.y, 500);
+    assert_eq!(500, current_point.x);
+    assert_eq!(500, current_point.y);
 
     mouse.move_absolute(MouseButton::Release, 600, 600, 10);
     thread::sleep(Duration::from_millis(10));
@@ -83,8 +83,8 @@ fn move_absolute() {
     unsafe {
         GetCursorPos(&raw mut current_point);
     };
-    assert_eq!(current_point.x, 600);
-    assert_eq!(current_point.y, 600);
+    assert_eq!(600, current_point.x);
+    assert_eq!(600, current_point.y);
 
     mouse.move_absolute(MouseButton::Release, 750, 750, 10);
     thread::sleep(Duration::from_millis(10));
@@ -92,8 +92,8 @@ fn move_absolute() {
     unsafe {
         GetCursorPos(&raw mut current_point);
     };
-    assert_eq!(current_point.x, 750);
-    assert_eq!(current_point.y, 750);
+    assert_eq!(750, current_point.x);
+    assert_eq!(750, current_point.y);
 
     mouse.move_absolute(MouseButton::Release, 1, 1, 10);
     thread::sleep(Duration::from_millis(10));
@@ -101,6 +101,6 @@ fn move_absolute() {
     unsafe {
         GetCursorPos(&raw mut current_point);
     };
-    assert_eq!(current_point.x, 1);
-    assert_eq!(current_point.y, 1);
+    assert_eq!(1, current_point.x);
+    assert_eq!(1, current_point.y);
 }
