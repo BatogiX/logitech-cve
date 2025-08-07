@@ -105,8 +105,6 @@ impl KeyboardIO {
 pub struct Device {
     /// Handle to the device file.
     filehandle: HANDLE,
-    /// I/O status block used for device operations.
-    iostatusblock: IO_STATUS_BLOCK,
 }
 
 impl Drop for Device {
@@ -124,12 +122,8 @@ impl Device {
     #[inline]
     pub fn try_new() -> Result<Self, &'static str> {
         let filehandle = HANDLE::default();
-        let iostatusblock = IO_STATUS_BLOCK::default();
 
-        let mut device = Self {
-            filehandle,
-            iostatusblock,
-        };
+        let mut device = Self { filehandle };
 
         if !device.open() {
             return Err("Device not found. Consider to download Logitech G HUB 2021.11.1775");
@@ -263,6 +257,7 @@ impl Device {
     fn device_initialize(&mut self, device_name: PCWSTR) -> NTSTATUS {
         let mut name = UNICODE_STRING::default();
         let mut attr = OBJECT_ATTRIBUTES::default();
+        let mut iostatusblock = IO_STATUS_BLOCK::default();
 
         // SAFETY: RtlInitUnicodeString requires a valid pointer to a UNICODE_STRING and a valid PCWSTR.
         unsafe {
@@ -275,7 +270,7 @@ impl Device {
                 &raw mut self.filehandle,
                 GENERIC_WRITE | SYNCHRONIZE,
                 &raw const attr,
-                &raw mut self.iostatusblock,
+                &raw mut iostatusblock,
                 ptr::null::<i64>(), // AllocationSize (optional)
                 FILE_ATTRIBUTE_NORMAL,
                 FILE_SHARE_NONE,
@@ -310,9 +305,9 @@ mod tests {
     fn open_close() {
         let mut device = Device {
             filehandle: HANDLE::default(),
-            iostatusblock: IO_STATUS_BLOCK::default(),
         };
-        assert!(device.open(), "Device not opened");
+        
+        assert!(device.open());
         device.close();
         assert!(device.filehandle.is_null());
     }
